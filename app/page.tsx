@@ -2,9 +2,10 @@
 import { useState } from "react";
 
 type Issue = { title: string; severity: "high" | "medium" | "low"; explanation: string; amount: string | null };
-type Result = { company: string; documentType: string; summary: string; issues: Issue[] };
+type Research = { question: string; answer: string; sources: { title: string; url: string }[] };
+type Result = { company: string; documentType: string; summary: string; issues: Issue[]; research?: Research[] };
 
-const SAMPLE = `StreamLine Internet - Monthly Statement - October 2026
+const SAMPLE = `Comcast Xfinity - Monthly Statement - October 2026
 Account #: 48213-77
 Internet 500 Mbps (promo rate ended 09/30)   $89.99
 Equipment Rental - Modem/Router              $15.00
@@ -22,6 +23,12 @@ const colors = {
   medium: "border-yellow-500 bg-yellow-500/10",
   low: "border-blue-500 bg-blue-500/10",
 };
+
+function money(amount: string | null) {
+  if (!amount) return null;
+  const a = String(amount);
+  return a.startsWith("$") ? a : `$${a}`;
+}
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -83,17 +90,41 @@ export default function Home() {
           <div className="mt-8">
             <h2 className="text-2xl font-semibold">{result.company}</h2>
             <p className="text-zinc-400 mt-1">{result.summary}</p>
+
             <div className="mt-4 space-y-3">
               {result.issues.map((issue, i) => (
                 <div key={i} className={`border-l-4 rounded-lg p-4 ${colors[issue.severity] ?? colors.low}`}>
                   <div className="flex justify-between font-semibold">
                     <span>{issue.title}</span>
-                    {issue.amount && <span>{issue.amount}</span>}
+                    {money(issue.amount) && <span>{money(issue.amount)}</span>}
                   </div>
                   <p className="text-sm text-zinc-300 mt-1">{issue.explanation}</p>
                 </div>
               ))}
             </div>
+
+            {result.research && result.research.length > 0 && (
+              <div className="mt-8">
+                <h3 className="text-xl font-semibold">🔎 Real-world check</h3>
+                <div className="mt-3 space-y-4">
+                  {result.research.map((r, i) => (
+                    <div key={i} className="rounded-lg p-4 bg-zinc-900 border border-zinc-700">
+                      <p className="font-semibold">{r.question}</p>
+                      <p className="text-sm text-zinc-300 mt-1">{r.answer}</p>
+                      <ul className="mt-2 text-sm space-y-1">
+                        {r.sources.map((s, j) => (
+                          <li key={j}>
+                            <a href={s.url} target="_blank" className="text-emerald-400 underline">
+                              {s.title}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

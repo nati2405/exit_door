@@ -1,10 +1,13 @@
 import OpenAI from "openai";
+import { tavily } from "@tavily/core";
 import { NextResponse } from "next/server";
 
 const client = new OpenAI({
   apiKey: process.env.NEBIUS_API_KEY,
   baseURL: process.env.NEBIUS_BASE_URL,
 });
+
+const tvly = tavily({ apiKey: process.env.TAVILY_API_KEY! });
 
 const PROMPT = `You are Exit Door, a consumer advocate that reviews bills, leases, and subscription contracts.
 Find anything that costs the user money or locks them in: hidden or junk fees, duplicate charges, price increases, auto-renewals, early termination fees, cancellation hurdles, and unfair clauses.
@@ -27,6 +30,28 @@ function extractJson(text: string) {
   return JSON.parse(cleaned.slice(start, end + 1));
 }
 
+// Tavily: look up real cancellation steps and fee complaints for the company
+async function realWorldCheck(company: string) {
+  if (!company || company === "Unknown") return [];
+  try {
+    const queries = [
+      `how to cancel ${company} service`,
+      `${company} hidden fees complaints refund`,
+    ];
+    const searches = await Promise.all(
+      queries.map((q) => tvly.search(q, { maxResults: 3, includeAnswer: true }))
+    );
+    return searches.map((s, i) => ({
+      question: i === 0 ? "How to cancel" : "What others are saying about fees",
+      answer: s.answer ?? "",
+      sources: s.results.map((r) => ({ title: r.title, url: r.url })),
+    }));
+  } catch (err) {
+    console.error("Tavily failed:", err);
+    return [];
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const { text } = await req.json();
@@ -45,7 +70,9 @@ export async function POST(req: Request) {
     });
 
     const reply = completion.choices[0]?.message?.content ?? "";
-    return NextResponse.json(extractJson(reply));
+    const analysis = extractJson(reply);
+    const research = await realWorldCheck(analysis.company);
+    return NextResponse.json({ ...analysis, research });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Analysis failed. Check the terminal for details." }, { status: 500 });
