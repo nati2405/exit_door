@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚪 Exit Door
 
-## Getting Started
+**Find what you're overpaying for, then walk out the door.**
 
-First, run the development server:
+Exit Door reads any bill, lease, or subscription contract and finds the hidden fees, duplicate charges, auto-renewal traps, and cancellation hurdles buried in it. It checks the company against the real world, then writes you a ready-to-send dispute/cancellation letter, a phone script for when they push back, and a step-by-step exit plan.
+
+🔗 **Live demo:** https://exit-door.vercel.app
+🎥 **Demo video:** _add YouTube link here_
+🏁 **Track:** Best Apps and Agents — Nebius x NVIDIA Global AI Hackathon
+
+---
+
+## The problem
+
+Everyone gets hit by junk fees, surprise renewals, and contracts designed to be hard to leave. Most people never read the fine print, and even when they notice something wrong, they don't know what to say or who to contact. Companies count on that.
+
+## What it does
+
+1. **Find the traps** — Paste a bill or contract. NVIDIA Nemotron flags every issue (hidden fees, duplicate charges, auto-renewals, early termination fees, unfair clauses) with a severity level and dollar amount.
+2. **Real-world check** — Tavily searches the live web for the company's actual cancellation process and what other customers are saying about its fees, with source links.
+3. **Get me out** — One click and Nemotron combines the analysis and research into:
+   - A step-by-step exit plan
+   - A firm, specific dispute/cancellation letter (one-click copy)
+   - A phone script, including what to say when they offer a retention deal
+
+## How it uses NVIDIA + Nebius
+
+| Piece | What it does |
+|---|---|
+| **NVIDIA Nemotron 3 Super** (`nvidia/nemotron-3-super-120b-a12b`) | Reasons over the document to find and rank issues, then writes the letter, script, and plan |
+| **Nebius Token Factory** | Serves Nemotron through its OpenAI-compatible API. Every analysis and exit plan is a live runtime call to Token Factory |
+| **Tavily** | Live web search for cancellation steps and fee complaints, fed back into Nemotron for the exit plan |
+
+Nemotron is a reasoning model, so Exit Door strips any thinking output and parses structured JSON from the reply. That keeps the UI clean and reliable.
+
+**Where Token Factory helped:** we didn't have to host a 120B model ourselves. Switching from a typical OpenAI setup was just a base URL and model ID change, which let us go from idea to working app quickly.
+
+## Tech stack
+
+- Next.js (App Router) + TypeScript + Tailwind CSS
+- OpenAI SDK pointed at Nebius Token Factory
+- `@tavily/core` for search
+- Deployed on Vercel
+
+## Run it locally
+
+**Requirements:** Node.js 18+, a Nebius Token Factory API key, and a Tavily API key.
+
+```bash
+git clone https://github.com/nati2405/exit_door.git
+cd exit_door
+npm install
+```
+
+Create a `.env.local` file in the project root:
+
+```
+NEBIUS_API_KEY=your_token_factory_key
+NEBIUS_MODEL=nvidia/nemotron-3-super-120b-a12b
+NEBIUS_BASE_URL=https://api.tokenfactory.nebius.com/v1/
+TAVILY_API_KEY=your_tavily_key
+```
+
+Start the app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000, click **Try a sample bill**, then **Find the traps**, then **🚪 Get me out**.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/
+  page.tsx              # The whole UI
+  api/analyze/route.ts  # Nemotron analysis + Tavily real-world check
+  api/exit/route.ts     # Nemotron exit plan: letter, phone script, steps
+```
 
-## Learn More
+## Disclaimer
 
-To learn more about Next.js, take a look at the following resources:
+Exit Door is not legal or financial advice. Always double-check phone numbers and addresses on the company's official site before sending anything.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
