@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
+export const maxDuration = 60;
 
 const client = new OpenAI({
   apiKey: process.env.NEBIUS_API_KEY,
@@ -7,7 +8,7 @@ const client = new OpenAI({
 });
 
 const PROMPT = `You are Exit Door, a consumer advocate. Using the bill analysis and real-world research provided, help the user dispute the bad charges and/or cancel.
-Be firm, polite, and specific. Use [Your Name] and [Account Number] as placeholders.
+Be firm, polite, and specific. Use [Your Name] and [Account Number] as placeholders. Write in plain text only, no markdown, no asterisks.
 Reply with ONLY valid JSON in this exact shape:
 {
   "letter": "a complete dispute and/or cancellation letter",

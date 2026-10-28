@@ -170,6 +170,7 @@ export default function Home() {
               <div className="mt-6 space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold">✅ Your plan</h3>
+                  <p className="text-xs text-zinc-500 mt-1">Always double-check phone numbers and addresses on the company&apos;s official site before sending.</p>
                   <ol className="list-decimal ml-6 mt-2 space-y-1 text-zinc-300">
                     {plan.steps.map((s, i) => <li key={i}>{s}</li>)}
                   </ol>

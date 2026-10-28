@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { tavily } from "@tavily/core";
 import { NextResponse } from "next/server";
+export const maxDuration = 60;
 
 const client = new OpenAI({
   apiKey: process.env.NEBIUS_API_KEY,
