@@ -4,6 +4,7 @@ import { useState } from "react";
 type Issue = { title: string; severity: "high" | "medium" | "low"; explanation: string; amount: string | null };
 type Research = { question: string; answer: string; sources: { title: string; url: string }[] };
 type Result = { company: string; documentType: string; summary: string; issues: Issue[]; research?: Research[] };
+type ExitPlan = { letter: string; phoneScript: string; steps: string[] };
 
 const SAMPLE = `Comcast Xfinity - Monthly Statement - October 2026
 Account #: 48213-77
@@ -35,11 +36,15 @@ export default function Home() {
   const [result, setResult] = useState<Result | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [plan, setPlan] = useState<ExitPlan | null>(null);
+  const [planLoading, setPlanLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   async function analyze() {
     setLoading(true);
     setError("");
     setResult(null);
+    setPlan(null);
     try {
       const res = await fetch("/api/analyze", {
         method: "POST",
@@ -56,12 +61,39 @@ export default function Home() {
     }
   }
 
+  async function getExitPlan() {
+    if (!result) return;
+    setPlanLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/exit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(result),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setPlan(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong");
+    } finally {
+      setPlanLoading(false);
+    }
+  }
+
+  function copyLetter() {
+    if (!plan) return;
+    navigator.clipboard.writeText(plan.letter);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100 px-4 py-10">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-4xl font-bold">🚪 Exit Door</h1>
         <p className="text-zinc-400 mt-2">
-          Paste a bill, lease, or subscription contract. We&apos;ll find the hidden fees and traps.
+          Paste a bill, lease, or subscription contract. We&apos;ll find the hidden fees and traps, then get you out.
         </p>
 
         <textarea
@@ -122,6 +154,44 @@ export default function Home() {
                       </ul>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={getExitPlan}
+              disabled={planLoading}
+              className="mt-8 w-full py-3 rounded-lg bg-emerald-500 text-black font-bold text-lg disabled:opacity-50"
+            >
+              {planLoading ? "Building your exit plan..." : "🚪 Get me out"}
+            </button>
+
+            {plan && (
+              <div className="mt-6 space-y-6">
+                <div>
+                  <h3 className="text-xl font-semibold">✅ Your plan</h3>
+                  <ol className="list-decimal ml-6 mt-2 space-y-1 text-zinc-300">
+                    {plan.steps.map((s, i) => <li key={i}>{s}</li>)}
+                  </ol>
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-xl font-semibold">✉️ Letter</h3>
+                    <button onClick={copyLetter} className="text-sm px-3 py-1 rounded border border-zinc-700">
+                      {copied ? "Copied!" : "Copy"}
+                    </button>
+                  </div>
+                  <pre className="mt-2 p-4 rounded-lg bg-zinc-900 border border-zinc-700 text-sm whitespace-pre-wrap font-sans">
+                    {plan.letter}
+                  </pre>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-semibold">📞 Phone script</h3>
+                  <pre className="mt-2 p-4 rounded-lg bg-zinc-900 border border-zinc-700 text-sm whitespace-pre-wrap font-sans">
+                    {plan.phoneScript}
+                  </pre>
                 </div>
               </div>
             )}
