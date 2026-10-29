@@ -5,7 +5,7 @@
 Exit Door reads any bill, lease, or subscription contract and finds the hidden fees, duplicate charges, auto-renewal traps, and cancellation hurdles buried in it. It checks the company against the real world, then writes you a ready-to-send dispute/cancellation letter, a phone script for when they push back, and a step-by-step exit plan.
 
 🔗 **Live demo:** https://exit-door.vercel.app
-🎥 **Demo video:** _add YouTube link here_
+🎥 **Demo video:** https://youtu.be/qHcalz9XZ2g
 🏁 **Track:** Best Apps and Agents — Nebius x NVIDIA Global AI Hackathon
 
 ---
